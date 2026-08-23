@@ -9,7 +9,8 @@
     "start": "cross-env FONTCONFIG_PATH=./assets/fonts node bot.js",
     "test:names": "cross-env FONTCONFIG_PATH=./assets/fonts node test-names.js",
     "test": "npm run test:names",
-    "send-test": "cross-env FONTCONFIG_PATH=./assets/fonts node send-test-welcome.js"
+    "send-test": "cross-env FONTCONFIG_PATH=./assets/fonts node send-test-welcome.js",
+    "test-batch": "cross-env FONTCONFIG_PATH=./assets/fonts node test-batch-welcome.js"
   },
   "dependencies": {
     "cross-env": "^7.0.3",
