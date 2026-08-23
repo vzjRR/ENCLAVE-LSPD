@@ -1,0 +1,44 @@
+[Unit]
+Description=LSPD server logs (same bot identity as lspd-bot, separate process)
+After=network-online.target
+Wants=network-online.target
+StartLimitBurst=5
+StartLimitIntervalSec=60
+
+[Service]
+Type=simple
+User=lspd-bot
+Group=lspd-bot
+WorkingDirectory=/opt/lspd-bot/logs-bot
+# Same secrets file as lspd-bot on purpose: same Discord application, this is
+# just a second process, not a second bot.
+EnvironmentFile=/etc/lspd-bot.env
+Environment=NODE_ENV=production
+ExecStart=/usr/bin/node bot.js
+Restart=always
+RestartSec=5
+
+MemoryHigh=128M
+MemoryMax=192M
+
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+RestrictRealtime=true
+RestrictNamespaces=true
+LockPersonality=true
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+SystemCallFilter=@system-service
+SystemCallErrorNumber=EPERM
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=lspd-logs-bot
+
+[Install]
+WantedBy=multi-user.target

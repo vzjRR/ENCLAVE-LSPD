@@ -1,0 +1,55 @@
+[Unit]
+Description=LSPD server bot
+After=network-online.target
+Wants=network-online.target
+StartLimitBurst=5
+StartLimitIntervalSec=60
+
+[Service]
+Type=simple
+User=lspd-bot
+Group=lspd-bot
+WorkingDirectory=/opt/lspd-bot/lspd-welcome-bot
+EnvironmentFile=/etc/lspd-bot.env
+Environment=NODE_ENV=production
+Environment=PORT=
+# Bundled fonts for rendering names in the welcome image -- without this it
+# falls back to a default system font, dropping glyphs for anything that
+# font doesn't cover (Arabic, decorative symbols, math-alphanumeric letters
+# some Discord names use, e.g. "𝑃𝐿𝑎𝑛𝑘"), leaving the name blank.
+Environment=FONTCONFIG_PATH=/opt/lspd-bot/lspd-welcome-bot/assets/fonts
+Environment=XDG_CACHE_HOME=/var/cache/lspd-bot
+ExecStart=/usr/bin/node bot.js
+Restart=always
+RestartSec=5
+
+MemoryHigh=256M
+MemoryMax=384M
+
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+# fonts.conf writes its cache inside the fonts dir itself, and /opt is
+# read-only under ProtectSystem=strict -- without this the cache build
+# fails and glyph quality degrades.
+ReadWritePaths=/opt/lspd-bot/lspd-welcome-bot/assets/fonts
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+RestrictRealtime=true
+RestrictNamespaces=true
+LockPersonality=true
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+SystemCallFilter=@system-service
+SystemCallErrorNumber=EPERM
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=lspd-bot
+CacheDirectory=lspd-bot
+
+[Install]
+WantedBy=multi-user.target

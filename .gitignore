@@ -1,0 +1,7 @@
+node_modules/
+.env
+
+lspd-welcome-bot/test-names-output/
+lspd-welcome-bot/.fc-cache/
+
+tickets-bot/data/

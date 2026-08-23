@@ -1,0 +1,43 @@
+[Unit]
+Description=LSPD tickets (same bot identity as lspd-bot, separate process)
+After=network-online.target
+Wants=network-online.target
+StartLimitBurst=5
+StartLimitIntervalSec=60
+
+[Service]
+Type=simple
+User=lspd-bot
+Group=lspd-bot
+WorkingDirectory=/opt/lspd-bot/tickets-bot
+EnvironmentFile=/etc/lspd-bot.env
+Environment=NODE_ENV=production
+ExecStart=/usr/bin/node src/index.js
+Restart=always
+RestartSec=5
+
+MemoryHigh=128M
+MemoryMax=192M
+
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/lspd-bot/tickets-bot/data
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+RestrictRealtime=true
+RestrictNamespaces=true
+LockPersonality=true
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+SystemCallFilter=@system-service
+SystemCallErrorNumber=EPERM
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=lspd-tickets-bot
+
+[Install]
+WantedBy=multi-user.target

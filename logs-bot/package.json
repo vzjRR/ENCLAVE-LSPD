@@ -1,0 +1,16 @@
+{
+  "name": "enclave-logs-bot",
+  "version": "1.0.0",
+  "description": "بوت مستقل: يكتب في كل قنوات 🔐 SECURITY & LOGS + يوفر أوامر /role-create /role-list /role-delete",
+  "main": "bot.js",
+  "type": "commonjs",
+  "private": true,
+  "scripts": {
+    "start": "node bot.js",
+    "deploy-commands": "node deploy-commands.js"
+  },
+  "dependencies": {
+    "discord.js": "^14.16.3",
+    "dotenv": "^16.4.5"
+  }
+}
