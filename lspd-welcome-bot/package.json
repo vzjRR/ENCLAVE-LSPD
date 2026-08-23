@@ -10,7 +10,8 @@
     "test:names": "cross-env FONTCONFIG_PATH=./assets/fonts node test-names.js",
     "test": "npm run test:names",
     "send-test": "cross-env FONTCONFIG_PATH=./assets/fonts node send-test-welcome.js",
-    "test-batch": "cross-env FONTCONFIG_PATH=./assets/fonts node test-batch-welcome.js"
+    "test-batch": "cross-env FONTCONFIG_PATH=./assets/fonts node test-batch-welcome.js",
+    "test-fake-names": "cross-env FONTCONFIG_PATH=./assets/fonts node test-fake-names.js"
   },
   "dependencies": {
     "cross-env": "^7.0.3",
