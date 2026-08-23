@@ -69,9 +69,26 @@ function register(client) {
     if (invite.guild?.id === guildId) inviteCache.delete(invite.code);
   });
 
+  // حارس تكرار: بعض حالات إعادة الاتصال بالـ gateway (RESUME بعد انقطاع شبكة
+  // قصير) قد تُعيد تسليم guildMemberAdd لعضو انضم قبل لحظات فيرسل ترحيبين لنفس
+  // الشخص. الحارس يتجاهل أي حدث لنفس معرّف العضو خلال ٦٠ ثانية من آخر ترحيب له.
+  const recentlyWelcomed = new Map(); // memberId -> timestamp
+  const DEDUPE_WINDOW_MS = 60_000;
+
   client.on('guildMemberAdd', async (member) => {
     try {
       if (member.guild.id !== guildId) return; // تجاهل لو البوت بأكثر من سيرفر
+
+      const now = Date.now();
+      const last = recentlyWelcomed.get(member.id);
+      if (last && now - last < DEDUPE_WINDOW_MS) {
+        console.warn(`⚠️  تجاهلت ترحيب مكرر لـ ${member.user.tag} (وصل خلال ${DEDUPE_WINDOW_MS / 1000} ثانية من آخر مرة)`);
+        return;
+      }
+      recentlyWelcomed.set(member.id, now);
+      for (const [id, ts] of recentlyWelcomed) {
+        if (now - ts > DEDUPE_WINDOW_MS) recentlyWelcomed.delete(id);
+      }
 
       const guild = member.guild;
       const channel = guild.channels.cache.find((c) => c.name === cfg.channelName && c.isTextBased());
