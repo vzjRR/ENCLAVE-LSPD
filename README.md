@@ -37,8 +37,12 @@ steps it prints when it finishes.
 
 ## Ticket categories
 
-`tickets-bot/src/index.js`'s `DEFAULT_SECTIONS` currently ships a single
-`Soon` placeholder section — the real category list hasn't been decided yet.
-Once it has, edit that array (and add the Arabic label to
-`SECTION_NAME_TRANSLATIONS` alongside it), then re-run `/quick-setup` in
-Discord to rebuild the categories.
+`tickets-bot/src/index.js`'s `DEFAULT_SECTIONS` ships three sections:
+
+- 🏢 Police Headquarters — رئاسة الشرطة
+- 🎓 Police Academy — أكاديمية الشرطة
+- ⚖️ Police Internal Affairs — الشؤون الداخلية للشرطة
+
+To change the list, edit that array (and the matching Arabic label in
+`SECTION_NAME_TRANSLATIONS`), then re-run `/quick-setup` in Discord to
+rebuild the categories.
