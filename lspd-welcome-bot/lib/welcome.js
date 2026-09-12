@@ -59,6 +59,24 @@ function register(client) {
       await refreshInviteCache(guild);
       console.log(`📋 تم تحميل ${inviteCache.size} دعوة لتتبعها`);
     }
+
+    // فحص فوري عند بدء التشغيل -- يطلع سبب فشل إعطاء الرول التلقائي فورًا
+    // بدل ما ننتظر عضو جديد ينضم عشان نكتشف المشكلة.
+    if (guild && cfg.autoAssignRoleId) {
+      const role = guild.roles.cache.get(cfg.autoAssignRoleId);
+      const me = guild.members.me;
+      if (!role) {
+        console.warn(`⚠️  فحص بدء التشغيل: ما لقيت رول بالـ ID "${cfg.autoAssignRoleId}" بسيرفر "${guild.name}" — تأكد إن الرول موجود بنفس هذا السيرفر (GUILD_ID الحالي: ${guildId})`);
+      } else if (!me) {
+        console.warn('⚠️  فحص بدء التشغيل: ما قدرت أتأكد من عضوية البوت بالسيرفر لأفحص صلاحياته');
+      } else if (!me.permissions.has('ManageRoles')) {
+        console.warn(`⚠️  فحص بدء التشغيل: البوت ما عنده صلاحية "Manage Roles" بسيرفر "${guild.name}" — إعطاء الرول التلقائي راح يفشل لأي عضو جديد`);
+      } else if (me.roles.highest.position <= role.position) {
+        console.warn(`⚠️  فحص بدء التشغيل: رول البوت الأعلى "${me.roles.highest.name}" (ترتيب ${me.roles.highest.position}) أوطى من أو يساوي رول "${role.name}" (ترتيب ${role.position}) — روح إعدادات السيرفر → الرولات واسحب رول البوت فوق هذا الرول`);
+      } else {
+        console.log(`✅ فحص بدء التشغيل: الرول التلقائي "${role.name}" موجود والبوت قادر يعطيه`);
+      }
+    }
   });
 
   client.on('inviteCreate', (invite) => {
