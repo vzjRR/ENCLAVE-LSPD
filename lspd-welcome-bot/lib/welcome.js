@@ -139,12 +139,12 @@ function register(client) {
       await channel.send({ content, files });
       console.log(`✅ رحّبنا بـ ${member.user.tag} (العضو #${guild.memberCount})${inviter ? ` — دعاه ${inviter.tag}` : ''}`);
 
-      if (cfg.autoAssignRole) {
-        const role = guild.roles.cache.find((r) => r.name === cfg.autoAssignRole);
+      if (cfg.autoAssignRoleId) {
+        const role = guild.roles.cache.get(cfg.autoAssignRoleId);
         if (role) {
           await member.roles.add(role).catch((err) => console.warn(`⚠️  فشل إعطاء الرول: ${err.message}`));
         } else {
-          console.warn(`⚠️  الرول "${cfg.autoAssignRole}" غير موجود — شغّل node build.js roles أولًا`);
+          console.warn(`⚠️  ما لقيت رول بالـ ID "${cfg.autoAssignRoleId}" — تأكد إنه موجود بسيرفر LSPD وإن البوت عنده صلاحية Manage Roles وإن الرول أوطى من رول البوت بالترتيب`);
         }
       }
 

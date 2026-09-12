@@ -34,10 +34,13 @@ module.exports = {
   // Invite tracking (who invited the new member) — needs "Manage Server" (Manage Guild)
   trackInvites: true,
 
-  // Role auto-assigned to new members on join (null disables this)
-  autoAssignRole: 'EN | VISITOR',
+  // Role auto-assigned to new members on join (null disables this).
+  // Matched by ID, not name -- a role rename or retype-by-hand no longer
+  // silently breaks this (name matching was the previous behavior and the
+  // reason it stopped assigning the role).
+  autoAssignRoleId: '1536194030902448138',
 
   // Also send a DM in addition to the channel message
   sendDM: true,
-  dmMessage: 'يا هلا فيك بسيرفر {serverName}! تفضل زور قناة ✈️・welcome داخل السيرفر.',
+  dmMessage: 'يا هلا فيك بسيرفر {serverName}! تفضل زور <#1536190189096149052> داخل السيرفر.',
 };
