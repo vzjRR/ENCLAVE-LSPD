@@ -19,12 +19,16 @@ function register(client) {
 
   // تتبع الدعوات — نحتفظ بعدد استخدامات كل رابط دعوة، ولما يدخل عضو جديد
   // نقارن العدد القديم بالجديد لنعرف أي رابط استُخدم ومين صاحبه.
-  let inviteCache = new Map(); // code -> uses
+  let inviteCache = new Map(); // code -> { uses, maxUses, inviter }
+
+  function snapshotInvites(invites) {
+    return new Map(invites.map((inv) => [inv.code, { uses: inv.uses, maxUses: inv.maxUses, inviter: inv.inviter }]));
+  }
 
   async function refreshInviteCache(guild) {
     try {
       const invites = await guild.invites.fetch();
-      inviteCache = new Map(invites.map((inv) => [inv.code, inv.uses]));
+      inviteCache = snapshotInvites(invites);
     } catch (err) {
       console.warn('⚠️  ما قدرنا نجيب قائمة الدعوات (تأكد إن البوت عنده صلاحية Manage Server):', err.message);
     }
@@ -33,19 +37,36 @@ function register(client) {
   async function findInviter(guild) {
     if (!cfg.trackInvites) return null;
     try {
-      const before = inviteCache;
+      // نسخة منفصلة عن inviteCache المشتركة، لأنها لو بقيت نفس المرجع فأي
+      // inviteDelete يوصل بينما ننتظر الـ fetch تحت راح يعدّل هذا المتغير
+      // نفسه (نفس الـ Map) ويمسح الدليل اللي نحتاجه بالضبط -- وهذا يصير
+      // بالظبط لما دعوة محدودة الاستخدام توصل حدها، لأن Discord يحذفها فورًا.
+      const before = new Map(inviteCache);
       const afterInvites = await guild.invites.fetch();
 
       let used = null;
       for (const invite of afterInvites.values()) {
-        const prevUses = before.get(invite.code) ?? 0;
-        if (invite.uses > prevUses) {
+        const prev = before.get(invite.code);
+        if (invite.uses > (prev?.uses ?? 0)) {
           used = invite;
           break;
         }
       }
 
-      inviteCache = new Map(afterInvites.map((inv) => [inv.code, inv.uses]));
+      // دعوة محدودة الاستخدام تختفي من afterInvites تمامًا فور ما توصل حدها
+      // (Discord يحذفها تلقائيًا)، فمقارنة "زاد العدد" فوق ما تلقطها أبدًا.
+      // نلقطها بدل ذلك: كانت موجودة قبل بعدد = حدها الأقصى ناقص واحد، وحسب
+      // نفس الاستدعاء اختفت.
+      if (!used) {
+        for (const [code, prev] of before) {
+          if (prev.maxUses > 0 && prev.uses === prev.maxUses - 1 && !afterInvites.has(code)) {
+            used = prev;
+            break;
+          }
+        }
+      }
+
+      inviteCache = snapshotInvites(afterInvites);
       return used ? used.inviter : null;
     } catch (err) {
       console.warn('⚠️  ما قدرنا نحدد مين دعا العضو الجديد:', err.message);
@@ -80,7 +101,9 @@ function register(client) {
   });
 
   client.on('inviteCreate', (invite) => {
-    if (invite.guild?.id === guildId) inviteCache.set(invite.code, invite.uses);
+    if (invite.guild?.id === guildId) {
+      inviteCache.set(invite.code, { uses: invite.uses, maxUses: invite.maxUses, inviter: invite.inviter });
+    }
   });
 
   client.on('inviteDelete', (invite) => {
